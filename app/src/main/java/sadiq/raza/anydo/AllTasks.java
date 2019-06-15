@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 import sadiq.raza.anydo.AddActivity;
 import sadiq.raza.anydo.Fragments.MyCalendar;
@@ -50,6 +51,7 @@ import sadiq.raza.anydo.OnBackPressed;
 import sadiq.raza.anydo.R;
 import sadiq.raza.anydo.MainActivity;
 import sadiq.raza.anydo.Task;
+import sadiq.raza.anydo.Utils.AlarmUtils;
 import sun.bob.mcalendarview.vo.DateData;
 
 public class AllTasks extends Fragment implements OnBackPressed, View.OnClickListener {
@@ -69,6 +71,8 @@ public class AllTasks extends Fragment implements OnBackPressed, View.OnClickLis
     private String txtDate, txtTime;
     private int mYear, mMonth, mDay, mHour, mMinute;
 
+    private Calendar calendar;
+
     public AllTasks() {
         // Required empty public constructor
     }
@@ -87,6 +91,8 @@ public class AllTasks extends Fragment implements OnBackPressed, View.OnClickLis
 
         toolbar = view.findViewById(R.id.toolbar);
         sharedPreferences=Objects.requireNonNull(getActivity()).getSharedPreferences("db",Context.MODE_PRIVATE);
+
+        calendar = Calendar.getInstance();
 
         today=view.findViewById(R.id.todayTv);
        final HashMap<String ,String > map=MainActivity.hm;
@@ -303,6 +309,10 @@ public class AllTasks extends Fragment implements OnBackPressed, View.OnClickLis
                                                     mHour = c.get(Calendar.HOUR_OF_DAY);
                                                     mMinute = c.get(Calendar.MINUTE);
 
+                                                    calendar.set(Calendar.YEAR,year);
+                                                    calendar.set(Calendar.MONTH,monthOfYear);
+                                                    calendar.set(Calendar.DAY_OF_MONTH,dayOfMonth);
+
                                                     // Launch Time Picker Dialog
                                                     TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
                                                             new TimePickerDialog.OnTimeSetListener() {
@@ -315,6 +325,9 @@ public class AllTasks extends Fragment implements OnBackPressed, View.OnClickLis
                                                                     Toast.makeText(getContext(), txtTime, Toast.LENGTH_SHORT).show();
                                                                     //HashMap<String,String >hm = new HashMap<>();
                                                                     //hm.put(taskt,txtDate+txtTime);
+                                                                    calendar.set(Calendar.HOUR_OF_DAY,hourOfDay);
+                                                                    calendar.set(Calendar.MINUTE,minute);
+                                                                    calendar.set(Calendar.SECOND,0);
                                                                     Task t = new Task(getContext());
                                                                     String arr[]=(txtDate+"-"+txtTime).split("-");
                                                                     int yy=Integer.parseInt(arr[2]);
@@ -334,6 +347,15 @@ public class AllTasks extends Fragment implements OnBackPressed, View.OnClickLis
                                                                     //new AlarmReceiver().onReceive(getContext(),intent);
                                                                     addEditText.setText("");
                                                                     Toast.makeText(getContext(),"Task saved successfully",Toast.LENGTH_SHORT).show();
+
+                                                                    Intent intent1 = new Intent(getActivity(), AlarmReceiver.class);
+                                                                    intent1.putExtra("title","My apna title");
+                                                                    intent1.putExtra("description",taskt );
+
+                                                                    int r = new  Random().nextInt(1000);
+
+                                                                    AlarmUtils.setAlarm(getActivity(),intent,r,calendar);
+
                                                                     Activity ac =getActivity();
                                                                     ac.finish();
                                                                     startActivity(ac.getIntent());
